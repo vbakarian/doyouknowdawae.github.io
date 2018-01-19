@@ -24,7 +24,7 @@ var images = {};
     img.src = 'images/' + imgName;
     images[imgName] = img;
 });
-
+var myMusic;
 
 class Entity {
     render(ctx) {
@@ -48,10 +48,6 @@ class Enemy extends Entity {
     update(timeDiff) {
         this.y = this.y + timeDiff * this.speed;
     }
-
-    // render(ctx) {
-    //     ctx.drawImage(this.sprite, this.x, this.y);
-    // }
 }
 
 class Player extends Entity {
@@ -71,10 +67,6 @@ class Player extends Entity {
             this.x = this.x + PLAYER_WIDTH;
         }
     }
-
-    // render(ctx) {
-    //     ctx.drawImage(this.sprite, this.x, this.y);
-    // }
 }
 
 
@@ -149,6 +141,9 @@ class Engine {
         });
 
         this.gameLoop();
+
+        myMusic = new sound("background-music.mp3");
+        myMusic.play();
     }
 
     /*
@@ -163,6 +158,7 @@ class Engine {
      */
     gameLoop() {
         // Check how long it's been since last frame
+
         console.log("hey")
         var currentFrame = Date.now();
         var timeDiff = currentFrame - this.lastFrame;
@@ -191,20 +187,25 @@ class Engine {
 
         if (!this.isDead && this.isPlayerDead()) {
             // If they are dead, then it's game over!
+            myMusic.stop("background-music.mp3");
+            var gameOverSong = new sound("game-over.mp3");
+            gameOverSong.play("game-over.mp3");
             this.isDead = true;
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText(this.score + ' GAME OVER', 5, 30);
-            this.ctx.fillText("PRESS SPACE TO START OVER", 50, 250);
+            this.ctx.fillText("PRESS SPACE TO START OVER", 10, 250);
             var isRestarted = true;
             document.addEventListener('keydown', e => {
-                console.log("hello")
+                // console.log("hello")
                 if (e.keyCode === SPACE && isRestarted === true) {
-                    isRestarted = false
+                    myMusic.play("background-music.mp3")
+                    gameOverSong.stop();
+                    isRestarted = false;
+                    this.isDead = false;
                     this.enemies = [];
+                    this.score = 0;
                     this.player = new Player();
-                    console.log(this.enemies)
-                    console.log(this.player)
                     requestAnimationFrame(this.gameLoop);
                 }
             });
@@ -223,7 +224,6 @@ class Engine {
     }
 
     isPlayerDead() {
-        // TODO: fix this function!
         var x;
         x = this.enemies.filter((enemy) => this.player.x < enemy.x + (ENEMY_WIDTH / 2) &&
             this.player.x + (PLAYER_WIDTH) > enemy.x &&
@@ -236,6 +236,20 @@ class Engine {
         console.log(this.player);
 
 
+    }
+}
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function () {
+        this.sound.play();
+    }
+    this.stop = function () {
+        this.sound.pause();
     }
 }
 
