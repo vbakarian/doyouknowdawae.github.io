@@ -163,6 +163,7 @@ class Engine {
      */
     gameLoop() {
         // Check how long it's been since last frame
+        console.log("hey")
         var currentFrame = Date.now();
         var timeDiff = currentFrame - this.lastFrame;
 
@@ -188,25 +189,23 @@ class Engine {
         // Check if player is dead
         console.log("Is player dead?: " + this.isPlayerDead());
 
-        if (this.isPlayerDead()) {
+        if (!this.isDead && this.isPlayerDead()) {
             // If they are dead, then it's game over!
-           // if(this.isDead) return ;
-            //this.isDead = true;
+            this.isDead = true;
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText(this.score + ' GAME OVER', 5, 30);
-            this.ctx.fillText("PRESS SPACE TO START OVER", 75, 250);
+            this.ctx.fillText("PRESS SPACE TO START OVER", 50, 250);
+            var isRestarted = true;
             document.addEventListener('keydown', e => {
                 console.log("hello")
-                if (e.keyCode === SPACE) {
-                    console.log()
-                    //var gameEngine = new Engine(document.getElementById('app'));
+                if (e.keyCode === SPACE && isRestarted === true) {
+                    isRestarted = false
                     this.enemies = [];
                     this.player = new Player();
                     console.log(this.enemies)
                     console.log(this.player)
-                    //gameEngine.start();
-
+                    requestAnimationFrame(this.gameLoop);
                 }
             });
         }
