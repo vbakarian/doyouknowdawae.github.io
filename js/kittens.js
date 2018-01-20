@@ -1,5 +1,5 @@
 // This sectin contains some game constants. It is not super interesting
-var GAME_WIDTH = 375;
+var GAME_WIDTH = 960;
 var GAME_HEIGHT = 500;
 
 var ENEMY_WIDTH = 75;
@@ -12,10 +12,14 @@ var PLAYER_HEIGHT = 54;
 // These two constants keep us from using "magic numbers" in our code
 var LEFT_ARROW_CODE = 37;
 var RIGHT_ARROW_CODE = 39;
+var UP_ARROW_CODE = 38;
+var DOWN_ARROW_CODE = 40;
 var SPACE = 32;
 // These two constants allow us to DRY
 var MOVE_LEFT = 'left';
 var MOVE_RIGHT = 'right';
+var MOVE_UP = 'up';
+var MOVE_DOWN = 'down';
 
 // Preload game images
 var images = {};
@@ -31,8 +35,6 @@ class Entity {
         ctx.drawImage(this.sprite, this.x, this.y);
     }
 }
-
-
 // This section is where you will be doing most of your coding
 class Enemy extends Entity {
     constructor(xPos) {
@@ -57,14 +59,18 @@ class Player extends Entity {
         this.y = GAME_HEIGHT - PLAYER_HEIGHT - 10;
         this.sprite = images['player.png'];
     }
-
+    
     // This method is called by the game engine when left/right arrows are pressed
     move(direction) {
         if (direction === MOVE_LEFT && this.x > 0) {
             this.x = this.x - PLAYER_WIDTH;
-        }
-        else if (direction === MOVE_RIGHT && this.x < GAME_WIDTH - PLAYER_WIDTH) {
+        } else if (direction === MOVE_RIGHT && this.x < GAME_WIDTH - PLAYER_WIDTH) {
             this.x = this.x + PLAYER_WIDTH;
+        }
+        else if (direction === MOVE_UP && this.y > PLAYER_HEIGHT) {
+            this.y = this.y - PLAYER_HEIGHT;
+        } else if (direction === MOVE_DOWN && this.y < GAME_HEIGHT - PLAYER_HEIGHT - 10) {
+            this.y = this.y + PLAYER_HEIGHT;
         }
     }
 }
@@ -137,6 +143,10 @@ class Engine {
             }
             else if (e.keyCode === RIGHT_ARROW_CODE) {
                 this.player.move(MOVE_RIGHT);
+            } else if (e.keyCode === DOWN_ARROW_CODE) {
+                this.player.move(MOVE_DOWN);
+            } else if (e.keyCode === UP_ARROW_CODE) {
+                this.player.move(MOVE_UP);
             }
         });
 
@@ -173,7 +183,7 @@ class Engine {
         this.ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
         this.enemies.forEach(enemy => enemy.render(this.ctx)); // draw the enemies
         this.player.render(this.ctx); // draw the player
-
+       
         // Check if any enemies should die
         this.enemies.forEach((enemy, enemyIdx) => {
             if (enemy.y > GAME_HEIGHT) {
@@ -193,8 +203,10 @@ class Engine {
             this.isDead = true;
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillText(this.score + ' GAME OVER', 5, 30);
-            this.ctx.fillText("PRESS SPACE TO START OVER", 10, 250);
+            this.ctx.fillText("Your Score: " + this.score, 300, 210);
+            this.ctx.fillStyle = 'red';
+            this.ctx.fillText("GAME OVER!!", 300, 250)
+            this.ctx.fillText("PRESS SPACE TO START OVER", 300, 290);
             var isRestarted = true;
             document.addEventListener('keydown', e => {
                 // console.log("hello")
@@ -231,9 +243,9 @@ class Engine {
             (PLAYER_HEIGHT) + this.player.y > enemy.y + (ENEMY_HEIGHT / 1.5));
         return x.length > 0 ? true : false;
 
-        console.log(x)
-        console.log(this.enemies);
-        console.log(this.player);
+        // console.log(x)
+        // console.log(this.enemies);
+        // console.log(this.player);
 
 
     }
