@@ -21,6 +21,9 @@ var MOVE_RIGHT = 'right';
 var MOVE_UP = 'up';
 var MOVE_DOWN = 'down';
 
+//Music variable
+var myMusic;
+
 // Preload game images
 var images = {};
 ['enemy.png', 'stars.png', 'player.png'].forEach(imgName => {
@@ -28,7 +31,7 @@ var images = {};
     img.src = 'images/' + imgName;
     images[imgName] = img;
 });
-var myMusic;
+
 
 class Entity {
     render(ctx) {
@@ -59,7 +62,7 @@ class Player extends Entity {
         this.y = GAME_HEIGHT - PLAYER_HEIGHT - 10;
         this.sprite = images['player.png'];
     }
-    
+
     // This method is called by the game engine when left/right arrows are pressed
     move(direction) {
         if (direction === MOVE_LEFT && this.x > 0) {
@@ -183,7 +186,7 @@ class Engine {
         this.ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
         this.enemies.forEach(enemy => enemy.render(this.ctx)); // draw the enemies
         this.player.render(this.ctx); // draw the player
-       
+
         // Check if any enemies should die
         this.enemies.forEach((enemy, enemyIdx) => {
             if (enemy.y > GAME_HEIGHT) {
