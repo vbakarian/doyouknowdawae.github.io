@@ -209,6 +209,9 @@ class Engine {
         this.ctx.drawImage(images['grey-background.png'], 0, 0); // draw the star bg
         this.enemies.forEach(enemy => enemy.render(this.ctx)); // draw the enemies
         this.player.render(this.ctx); // draw the player
+        this.ctx.font = 'bold 30px Comic Sans MS';
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillText("LIVES: ",650,45);
         this.lives.forEach(life => life.render(this.ctx));
 
         // Check if any enemies should die
@@ -229,7 +232,7 @@ class Engine {
             gameOverSong.play("ded.mp3");
             this.isDead = true;
             this.removeLives();
-            this.ctx.font = 'bold 30px Impact';
+            this.ctx.font = 'bold 30px Comic Sans MS';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText("Your Score: " + this.score, 300, 210);
             this.ctx.fillStyle = 'red';
@@ -250,7 +253,7 @@ class Engine {
                 }
             });
         } else if (PLAYER_LIVES === 0) {
-            this.ctx.font = 'bold 30px Impact';
+            this.ctx.font = 'bold 30px Comic Sans MS';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText("Your Score: " + this.score, 300, 210);
             this.ctx.fillStyle = 'red';
@@ -266,7 +269,7 @@ class Engine {
         }
         else {
             // If player is not dead, then draw the score
-            this.ctx.font = 'bold 30px Impact';
+            this.ctx.font = 'bold 30px Comic Sans MS';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText("Score:  " + this.score, 5, 30);
 
