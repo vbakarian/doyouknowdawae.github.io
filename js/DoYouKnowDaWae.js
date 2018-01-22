@@ -1,13 +1,16 @@
 // This sectin contains some game constants. It is not super interesting
 var GAME_WIDTH = 960;
-var GAME_HEIGHT = 500;
+var GAME_HEIGHT = 540;
 
-var ENEMY_WIDTH = 75;
-var ENEMY_HEIGHT = 156;
+var ENEMY_WIDTH = 77;
+var ENEMY_HEIGHT = 77;
 var MAX_ENEMIES = 3;
 
-var PLAYER_WIDTH = 75;
-var PLAYER_HEIGHT = 54;
+var PLAYER_WIDTH = 74;
+var PLAYER_HEIGHT = 64;
+
+var LIFE_HEIGHT = 45;
+var LIFE_WIDTH = 67;
 
 // These two constants keep us from using "magic numbers" in our code
 var LEFT_ARROW_CODE = 37;
@@ -15,6 +18,7 @@ var RIGHT_ARROW_CODE = 39;
 var UP_ARROW_CODE = 38;
 var DOWN_ARROW_CODE = 40;
 var SPACE = 32;
+var ENTER = 13;
 // These two constants allow us to DRY
 var MOVE_LEFT = 'left';
 var MOVE_RIGHT = 'right';
@@ -28,7 +32,7 @@ var myMusic;
 
 // Preload game images
 var images = {};
-['enemy.png', 'stars.png', 'player.png'].forEach(imgName => {
+['sanic.png', 'grey-background.png', 'wae.png', 'rings.gif'].forEach(imgName => {
     var img = document.createElement('img');
     img.src = 'images/' + imgName;
     images[imgName] = img;
@@ -43,11 +47,9 @@ class Entity {
 class Lives extends Entity {
     constructor(xPos) {
         super();
-        this.x = xPos + GAME_WIDTH - 230;
-        this.y = 0;
-        this.sprite = images['player.png'];
-
-
+        this.x = xPos + GAME_WIDTH - 200;
+        this.y = 15;
+        this.sprite = images['rings.gif'];
     }
 
 }
@@ -57,7 +59,7 @@ class Enemy extends Entity {
         super();
         this.x = xPos;
         this.y = -ENEMY_HEIGHT;
-        this.sprite = images['enemy.png'];
+        this.sprite = images['sanic.png'];
 
         // Each enemy should have a different speed
         this.speed = Math.random() / 2 + 0.25;
@@ -73,7 +75,7 @@ class Player extends Entity {
         super();
         this.x = 2 * PLAYER_WIDTH;
         this.y = GAME_HEIGHT - PLAYER_HEIGHT - 10;
-        this.sprite = images['player.png'];
+        this.sprite = images['wae.png'];
     }
 
     // This method is called by the game engine when left/right arrows are pressed
@@ -124,7 +126,7 @@ class Engine {
             this.lives = [];
         }
         for (var i = 0; i < PLAYER_LIVES; i++) {
-            this.lives[i] = new Lives(i * PLAYER_WIDTH);
+            this.lives[i] = new Lives(i * LIFE_WIDTH);
         }
     }
     /*
@@ -175,7 +177,7 @@ class Engine {
 
         this.gameLoop();
 
-        myMusic = new sound("background-music.mp3");
+        myMusic = new sound("da_wae.mp3");
         myMusic.play();
 
     }
@@ -204,7 +206,7 @@ class Engine {
         this.enemies.forEach(enemy => enemy.update(timeDiff));
 
         // Draw everything!
-        this.ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
+        this.ctx.drawImage(images['grey-background.png'], 0, 0); // draw the star bg
         this.enemies.forEach(enemy => enemy.render(this.ctx)); // draw the enemies
         this.player.render(this.ctx); // draw the player
         this.lives.forEach(life => life.render(this.ctx));
@@ -222,21 +224,22 @@ class Engine {
 
         if (!this.isDead && this.isPlayerDead() && PLAYER_LIVES > 0) {
             // If they are dead, then it's game over!
-            myMusic.stop("background-music.mp3");
-            var gameOverSong = new sound("game-over.mp3");
-            gameOverSong.play("game-over.mp3");
+            myMusic.stop("da_wae.mp3");
+            var gameOverSong = new sound("ded.mp3");
+            gameOverSong.play("ded.mp3");
             this.isDead = true;
             this.removeLives();
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText("Your Score: " + this.score, 300, 210);
             this.ctx.fillStyle = 'red';
-            this.ctx.fillText("PRESS SPACE TO START OVER", 300, 250);
+            this.ctx.fillText("YOU DID NOT KNOW DA WAE", 300, 250);
+            this.ctx.fillText("PRESS SPACE TO START AGAIN", 300, 290);
             var isRestarted = true;
             document.addEventListener('keydown', e => {
                 // console.log("hello")
                 if (e.keyCode === SPACE && isRestarted === true) {
-                    myMusic.play("background-music.mp3")
+                    myMusic.play("da_wae.mp3")
                     gameOverSong.stop();
                     isRestarted = false;
                     this.isDead = false;
@@ -251,17 +254,13 @@ class Engine {
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText("Your Score: " + this.score, 300, 210);
             this.ctx.fillStyle = 'red';
-            this.ctx.fillText("GAME OVER!!", 300, 250)
-            this.ctx.fillText("PRESS SPACE TO RESTART GAME", 300, 290);
+            this.ctx.fillText("GAME OVER!", 300, 250);
+            this.ctx.fillText("PRESS ENTER TO RESTART GAME", 300, 290);
+            var clickedEnter = true;
             document.addEventListener('keydown', e => {
                 // console.log("hello")
-                if (e.keyCode === SPACE) {
-                    isRestarted = false;
-                    this.isDead = false;
-                    this.enemies = [];
-                    this.score = 0;
-                    this.player = new Player();
-                    requestAnimationFrame(this.gameLoop);
+                if (e.keyCode === ENTER) {
+                    location.reload();
                 }
             });
         }
@@ -284,13 +283,8 @@ class Engine {
             this.player.x + (PLAYER_WIDTH) > enemy.x &&
             this.player.y < enemy.y + (ENEMY_HEIGHT) &&
             (PLAYER_HEIGHT) + this.player.y > enemy.y + (ENEMY_HEIGHT / 1.5));
+
         return x.length > 0 ? true : false;
-
-        // console.log(x)
-        // console.log(this.enemies);
-        // console.log(this.player);
-
-
     }
     removeLives() {
         delete this.lives[MAX_LIVES - PLAYER_LIVES];
