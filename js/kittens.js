@@ -21,6 +21,8 @@ var MOVE_RIGHT = 'right';
 var MOVE_UP = 'up';
 var MOVE_DOWN = 'down';
 
+var MAX_LIVES = 3;
+var PLAYER_LIVES = 3;
 //Music variable
 var myMusic;
 
@@ -37,6 +39,17 @@ class Entity {
     render(ctx) {
         ctx.drawImage(this.sprite, this.x, this.y);
     }
+}
+class Lives extends Entity {
+    constructor(xPos) {
+        super();
+        this.x = xPos + GAME_WIDTH - 230;
+        this.y = 0;
+        this.sprite = images['player.png'];
+
+
+    }
+
 }
 // This section is where you will be doing most of your coding
 class Enemy extends Entity {
@@ -80,8 +93,6 @@ class Player extends Entity {
 
 
 
-
-
 /*
 This section is a tiny game engine.
 This engine will use your Enemy and Player classes to create the behavior of the game.
@@ -95,6 +106,8 @@ class Engine {
         // Setup enemies, making sure there are always three
         this.setupEnemies();
 
+        //Setup lives
+        this.setupLives();
         // Setup the <canvas> element where we will be drawing
         var canvas = document.createElement('canvas');
         canvas.width = GAME_WIDTH;
@@ -106,7 +119,14 @@ class Engine {
         // Since gameLoop will be called out of context, bind it once here.
         this.gameLoop = this.gameLoop.bind(this);
     }
-
+    setupLives() {
+        if (!this.lives) {
+            this.lives = [];
+        }
+        for (var i = 0; i < PLAYER_LIVES; i++) {
+            this.lives[i] = new Lives(i * PLAYER_WIDTH);
+        }
+    }
     /*
      The game allows for 5 horizontal slots where an enemy can be present.
      At any point in time there can be at most MAX_ENEMIES enemies otherwise the game would be impossible
@@ -123,7 +143,7 @@ class Engine {
 
     // This method finds a random spot where there is no enemy, and puts one in there
     addEnemy() {
-        var enemySpots = GAME_WIDTH / ENEMY_WIDTH; // makes 5 rows for each enemy to start
+        var enemySpots = GAME_WIDTH / ENEMY_WIDTH; // makes amount of rows based on game width and the width of the enemy
 
         var enemySpot;
         // Keep looping until we find a free enemy spot at random
@@ -157,6 +177,7 @@ class Engine {
 
         myMusic = new sound("background-music.mp3");
         myMusic.play();
+
     }
 
     /*
@@ -186,6 +207,7 @@ class Engine {
         this.ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
         this.enemies.forEach(enemy => enemy.render(this.ctx)); // draw the enemies
         this.player.render(this.ctx); // draw the player
+        this.lives.forEach(life => life.render(this.ctx));
 
         // Check if any enemies should die
         this.enemies.forEach((enemy, enemyIdx) => {
@@ -198,18 +220,18 @@ class Engine {
         // Check if player is dead
         console.log("Is player dead?: " + this.isPlayerDead());
 
-        if (!this.isDead && this.isPlayerDead()) {
+        if (!this.isDead && this.isPlayerDead() && PLAYER_LIVES > 0) {
             // If they are dead, then it's game over!
             myMusic.stop("background-music.mp3");
             var gameOverSong = new sound("game-over.mp3");
             gameOverSong.play("game-over.mp3");
             this.isDead = true;
+            this.removeLives();
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText("Your Score: " + this.score, 300, 210);
             this.ctx.fillStyle = 'red';
-            this.ctx.fillText("GAME OVER!!", 300, 250)
-            this.ctx.fillText("PRESS SPACE TO START OVER", 300, 290);
+            this.ctx.fillText("PRESS SPACE TO START OVER", 300, 250);
             var isRestarted = true;
             document.addEventListener('keydown', e => {
                 // console.log("hello")
@@ -224,12 +246,30 @@ class Engine {
                     requestAnimationFrame(this.gameLoop);
                 }
             });
+        } else if (PLAYER_LIVES === 0) {
+            this.ctx.font = 'bold 30px Impact';
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillText("Your Score: " + this.score, 300, 210);
+            this.ctx.fillStyle = 'red';
+            this.ctx.fillText("GAME OVER!!", 300, 250)
+            this.ctx.fillText("PRESS SPACE TO RESTART GAME", 300, 290);
+            document.addEventListener('keydown', e => {
+                // console.log("hello")
+                if (e.keyCode === SPACE) {
+                    isRestarted = false;
+                    this.isDead = false;
+                    this.enemies = [];
+                    this.score = 0;
+                    this.player = new Player();
+                    requestAnimationFrame(this.gameLoop);
+                }
+            });
         }
         else {
             // If player is not dead, then draw the score
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillText(this.score, 5, 30);
+            this.ctx.fillText("Score:  " + this.score, 5, 30);
 
             // Set the time marker and redraw
             this.lastFrame = Date.now();
@@ -251,6 +291,11 @@ class Engine {
         // console.log(this.player);
 
 
+    }
+    removeLives() {
+        delete this.lives[MAX_LIVES - PLAYER_LIVES];
+        PLAYER_LIVES--;
+        console.log(PLAYER_LIVES);
     }
 }
 function sound(src) {
